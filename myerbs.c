@@ -1,0 +1,305 @@
+#include "myerbs.h"
+
+
+namespace HXlib {
+
+template <typename T>
+MyERBS<T>::MyERBS(MyCircle<T>* curve, int numLC)
+{
+    //this->setSurroundingSphere(GMlib::PSphere<T>(100.0f));
+    mycircle_ = curve;
+    if(curve->isClosed() == true)
+    {
+        numLC++;
+    }
+    //myknotvector_ = std::make_shared<HXlib::KnotVector<T>>(mycircle_, numLC);
+    auto knotClass = new KnotVector<T>(mycircle_, numLC);
+    myknotvector_ = knotClass->getKnotVector();
+   // std::cout << myknotvector_ << std::endl;
+
+   // createSubCurve();  //using subcurve to blend
+    createBezierCurve();   //using bezier curve to blend
+
+
+}
+
+
+template <typename T>
+void MyERBS<T>::createSubCurve()
+{
+
+    GMlib::Color subcurveColors [] =
+    {
+
+        GMlib::GMcolor::Brown,GMlib::GMcolor::Green,GMlib::GMcolor::Red,
+                                              GMlib::GMcolor::Yellow, GMlib::GMcolor::Pink, GMlib::GMcolor::White,
+                                              GMlib::GMcolor::RosyBrown,GMlib::GMcolor::Fuchsia,GMlib::GMcolor::BlanchedAlamond,
+                                              GMlib::GMcolor::Coral, GMlib::GMcolor::Silver, GMlib::GMcolor::YellowGreen,
+                                              GMlib::GMcolor::LightSalmon,GMlib::GMcolor::Olive,GMlib::GMcolor::Ivory
+
+    };
+
+    for(int i = 0; i < myknotvector_.getDim()-1; i++)
+    {
+        float s = myknotvector_[i];
+        float t = myknotvector_[i+1];
+        float e = myknotvector_[i+2];
+        auto curve = std::make_shared<HXlib::MySubCurve<T>>(mycircle_,s,e,t);
+
+        currentSubCurve_.push_back(curve);
+        curve->toggleDefaultVisualizer();
+        curve->setColor(subcurveColors[i]);
+        curve->setVisible(false);                                    //false = will not show subcurve
+        curve->replot(200);
+        curve->translate(GMlib::Vector<float,3>(0.f,0.f,1.f));
+        this->insert(curve.get());
+        //std::cout << myknotvector_.getDim() << std::endl;
+
+    }
+
+    if(mycircle_->isClosed())// if closed, set the first and the last to the same
+    {
+        currentSubCurve_.push_back(currentSubCurve_[0]);
+    }
+
+}
+
+template <typename T>
+void MyERBS<T>::createBezierCurve()
+{
+    GMlib::Color bezierCurveColors [] = {
+
+        GMlib::GMcolor::Brown,GMlib::GMcolor::Green,GMlib::GMcolor::Red,
+                                              GMlib::GMcolor::Yellow, GMlib::GMcolor::Pink, GMlib::GMcolor::White,
+                                              GMlib::GMcolor::RosyBrown,GMlib::GMcolor::Fuchsia,GMlib::GMcolor::BlanchedAlamond,
+                                              GMlib::GMcolor::Coral, GMlib::GMcolor::Silver, GMlib::GMcolor::YellowGreen,
+                                              GMlib::GMcolor::LightSalmon,GMlib::GMcolor::Olive,GMlib::GMcolor::Ivory
+
+
+    };
+
+    for(int i = 0; i < myknotvector_.getDim()-1; i++) //myknotvector_.getDim() is number of knots, myknotvector_.getDim()+3 is number of local curve
+        {
+            float s = myknotvector_[i];
+            float t = myknotvector_[i+1];
+            float e = myknotvector_[i+2];
+
+            //std::cout << s <<" "<< t << " " << e << std::endl;
+            auto curve = std::make_shared<HXlib::MyBezier<T>>(mycircle_, s, t, e, 2);  //这里设置degree
+            currentBezierCurve_.push_back(curve);
+            curve->toggleDefaultVisualizer();
+            curve->setColor(bezierCurveColors[i]);
+           // curve->setVisible(false); //false = will not show beziercurve
+            curve->replot(200,2);
+            curve->translate(GMlib::Vector<float,3>(0.f,0.f,0.f));
+            this->insert(curve.get());
+        //std::cout << curve->getPos() <<std::endl;
+        }
+        if(mycircle_->isClosed())// if closed, set the first and the last to the same
+        {
+            currentBezierCurve_.push_back(currentBezierCurve_[0]);
+        }
+
+}
+
+
+template <typename T>
+void MyERBS<T>::bezierCurveInEval(T t, int d)
+{
+
+
+//    int k = 0;
+//    for(k = 1; k < myknotvector_.getDim()-3; ++k)
+//    {
+//        if(t < myknotvector_[k+1])
+//        {
+//            break;
+//        }
+//    }
+
+// Find the knot vector interval (k)
+    int k = 0;
+    for(k = 1; k <= myknotvector_.getDim()-1; ++k) // k is the knot vector
+    {
+        if(t < myknotvector_[k+1])
+        {
+            break;
+        }
+        if (t == myknotvector_[myknotvector_.getDim()-2])   //t is the value got from the Eval
+        {
+            k = myknotvector_.getDim()-3;
+            break;
+        }
+    }
+
+
+    //std::cout << k << std::endl;
+
+
+    T tk = (t -(myknotvector_[k-1]))/ (myknotvector_[k+1] -myknotvector_[k-1]);  //P225
+    T tk1 = (t -(myknotvector_[k]))/ (myknotvector_[k+2] -myknotvector_[k]);
+
+    T scale = T(1) / (myknotvector_[k+1]- (myknotvector_[k]));
+    T scaleBasisFunctions = (t - myknotvector_[k]) / (myknotvector_[k+1]-myknotvector_[k]);
+
+    GMlib::DVector<float> Bfunction = B(scaleBasisFunctions,d,scale);
+
+    auto Ck = currentBezierCurve_[k-1]->evaluateParent(tk,d); // Location 0-1
+    auto Ck1 = currentBezierCurve_[k]->evaluateParent(tk1,d); // Location 0
+
+
+    // C(t)
+    this->_p[0] = Ck[0] + (Ck1[0] - Ck[0]) * Bfunction[0];
+
+    // First derivate (C'(t))
+    if(d > 0)
+    {
+        this->_p[1] = Ck[1] + (Ck1[1] - Ck[1]) * Bfunction[0] + (Ck1[0] - Ck[0]) * Bfunction[1];
+
+    }
+    // Second derivate (C''(t))
+    if(d > 1)
+    {
+        this->_p[2] = Ck[2] + (Ck1[2] - Ck[2]) *Bfunction[0] + 2*(Ck1[1] - Ck[1]) * Bfunction[1]+
+                (Ck1[0] - Ck[0])* Bfunction[2];
+    }
+
+
+
+}
+
+
+template <typename T>
+GMlib::DVector<float> MyERBS<T>::B(T tP, int d, T scale)
+{
+    GMlib::DVector<float> v;
+    v.setDim(d+1);
+    v[0]=(3*std::pow(tP,2)) - (2*std::pow(tP,3));
+
+    if(d>0)
+            v[1]=(6*tP - (6*std::pow(tP,2))) * scale;
+    if(d>1)
+        (6-12*tP)*std::pow(scale,2);
+
+    return v;
+}
+
+
+template <typename T>
+void MyERBS<T>::subCurveInEval(T t, int d)
+{
+    // Find the knot interval (k)
+    int k = 0;
+    for(k = 1; k <= myknotvector_.getDim()-1; ++k) // k is the knot vector
+    {
+        if(t < myknotvector_[k+1])
+        {
+            break;
+        }
+        if (t == myknotvector_[myknotvector_.getDim()-2])   //t is the value got from the Eval
+        {
+            k = myknotvector_.getDim()-3;
+            break;
+        }
+    }
+
+//                                            std::cout << "myknotvector_.getDim()" << std::endl;
+//                                            std::cout << myknotvector_.getDim() << std::endl;
+//                                            std::cout << "k" << std::endl;
+//                                            std::cout << k << std::endl;
+//                                            std::cout << "subcurves" << std::endl;
+//                                            std::cout << currentSubCurve_.size() << std::endl;
+
+
+
+    auto Ck = currentSubCurve_[k-1]->evaluateParent(t,d); // Location 0-1  evaluate the currentSubCurve
+    auto Ck1 = currentSubCurve_[k]->evaluateParent(t,d); // Location 0
+
+    T scale = 1 / (myknotvector_[k+1]- myknotvector_[k]);
+    T scaleBasisFunctions = (t - myknotvector_[k]) / (myknotvector_[k+1]-myknotvector_[k]);
+
+
+
+    GMlib::DVector<float> Bfunction = B(scaleBasisFunctions,d,scale);
+//P220 8.5  B-function is short for blending function
+
+    // C(t)
+    this->_p[0] = Ck[0] + (Ck1[0] - Ck[0]) * Bfunction[0];
+
+    // First derivate (C'(t))
+    if(d > 0)
+    {
+        this->_p[1] = Ck[1] + (Ck1[1] - Ck[1]) * Bfunction[0] + (Ck1[0] - Ck[0]) * Bfunction[1];
+
+    }
+
+    // Second derivate (C''(t))  //8.6
+    if(d > 1)
+    {
+        this->_p[2] = Ck[2] + (Ck1[2] - Ck[2]) * Bfunction[0] + 2*(Ck1[1] - Ck[1]) *Bfunction[1]+
+                (Ck1[0] - Ck[0])*Bfunction[2];
+    }
+
+
+}
+
+
+template <typename T>
+void MyERBS<T>::eval(T t, int d, bool /*l*/)
+{
+
+    this->_p.setDim( d + 1 );
+
+    bezierCurveInEval(t,d);
+ //   subCurveInEval(t,d);
+
+}
+
+
+
+//template <typename T>
+//T MyERBS<T>::calculateBFB1(T tP)
+//{    // polynomial function of first order B function P139
+//    // Calculate BFB-function, order 1 (C1).
+//    return (3*std::pow(tP,2)) - (2*std::pow(tP,3));
+
+//}
+
+//template <typename T>
+//T MyERBS<T>::calculateBFBDer1(T tP, T scale)
+//{
+//    // Calculate BFB-function, order 1 derivated(C'1).
+
+//    return (6*tP - (6*std::pow(tP,2))) * scale;
+//}
+
+//template <typename T>
+//T MyERBS<T>::calculateBFBDer2(T tP, T scale)
+//{
+//    // Calculate BFB-function, order 2 derivated (C''1).
+//    return (6-12*tP)*std::pow(scale,2);
+//}
+
+
+template <typename T>
+T MyERBS<T>::getEndP()
+{
+    return myknotvector_[myknotvector_.getDim()-2];
+}
+
+template <typename T>
+T MyERBS<T>::getStartP()
+{
+    return myknotvector_[1];
+}
+
+
+template <typename T>
+void MyERBS<T>::localSimulate(double dt)
+{
+   this->rotate(GMlib::Angle(1* dt * dt), GMlib::Vector<T,3>(1, 0, 1 ));
+
+
+}
+}
+
