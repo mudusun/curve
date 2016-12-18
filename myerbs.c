@@ -160,7 +160,7 @@ void MyERBS<T>::bezierCurveInEval(T t, int d)
 
 template <typename T>
 GMlib::DVector<float> MyERBS<T>::B(T tP, int d, T scale)
-{
+{   // polynomial function of first order B function P139
     GMlib::DVector<float> v;
     v.setDim(d+1);
     v[0]=(3*std::pow(tP,2)) - (2*std::pow(tP,3));
@@ -246,28 +246,6 @@ void MyERBS<T>::eval(T t, int d, bool /*l*/)
 
 
 
-//template <typename T>
-//T MyERBS<T>::calculateBFB1(T tP)
-//{    // polynomial function of first order B function P139
-//    // Calculate BFB-function, order 1 (C1).
-//    return (3*std::pow(tP,2)) - (2*std::pow(tP,3));
-
-//}
-
-//template <typename T>
-//T MyERBS<T>::calculateBFBDer1(T tP, T scale)
-//{
-//    // Calculate BFB-function, order 1 derivated(C'1).
-
-//    return (6*tP - (6*std::pow(tP,2))) * scale;
-//}
-
-//template <typename T>
-//T MyERBS<T>::calculateBFBDer2(T tP, T scale)
-//{
-//    // Calculate BFB-function, order 2 derivated (C''1).
-//    return (6-12*tP)*std::pow(scale,2);
-//}
 
 
 template <typename T>
