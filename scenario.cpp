@@ -40,6 +40,7 @@ void Scenario::initializeScenario() {
   //proj_rcpair.camera->enableCulling(false);
   scene()->insertCamera( proj_rcpair.camera.get() );
   proj_rcpair.renderer->reshape( GMlib::Vector<int,2>(init_viewport_size, init_viewport_size) );
+  proj_rcpair.renderer->setClearColor(GMlib::GMcolor::LightYellow);
 
   // Front cam
   auto front_rcpair = createRCPair("Front");
@@ -61,7 +62,7 @@ void Scenario::initializeScenario() {
   top_rcpair.camera->setCuttingPlanes( 1.0f, 8000.0f );
   scene()->insertCamera( top_rcpair.camera.get() );
   top_rcpair.renderer->reshape( GMlib::Vector<int,2>(init_viewport_size, init_viewport_size) );
-
+  top_rcpair.renderer->setClearColor(GMlib::GMcolor::LightYellow);
 
 
 
@@ -71,10 +72,11 @@ void Scenario::initializeScenario() {
   // Original curve visualizers
   auto circle = new HXlib::MyCircle<float>();
   circle->toggleDefaultVisualizer();
-  circle->setColor(GMlib::GMcolor::Aqua);
+  circle->setColor(GMlib::GMcolor::DeepPink);
   circle->setVisible(true); //false = will not show original curve
+  circle->translate(GMlib::Vector<float,3>(-6,0,0));
   circle->replot(200,2);
-  //scene()->insert(circle);
+  scene()->insert(circle);
 
 
 
@@ -103,18 +105,18 @@ void Scenario::initializeScenario() {
   myerbs_ = std::make_shared<HXlib::MyERBS<float>>(circle, 20);
   myerbs_->setColor(GMlib::GMcolor::Blue);
   myerbs_->toggleDefaultVisualizer();
-  myerbs_->translateGlobal(GMlib::Vector<float,3>(0,0,2));
+  myerbs_->translateGlobal(GMlib::Vector<float,3>(6,0,2));
   myerbs_->replot(200,2);
-  scene()->insert(myerbs_.get());
+  //scene()->insert(myerbs_.get());
 
 
 
-  //auto bezier = new HXlib::MyBezier<float>(circle, 1.f, 2.f, 3.f, 5);
-  //
-  //bezier->toggleDefaultVisualizer();
-  //bezier->translateGlobal(GMlib::Vector<float,3>(0,0,0));
-  //bezier->replot(100,2);
-  //scene()->insert(bezier);
+//  auto bezier = new HXlib::MyBezier<float>(circle, 1.f, 2.f, 3.f, 5);
+
+//  bezier->toggleDefaultVisualizer();
+//  bezier->translateGlobal(GMlib::Vector<float,3>(0,0,0));
+//  bezier->replot(100,2);
+//  scene()->insert(bezier);
 
 
 

@@ -31,7 +31,9 @@ protected:
     int deg;
 
     GMlib::PCurve<T,3>* _c;
+    //GMlib::PCurve<T,3>* _p;
     GMlib::DVector<GMlib::Vector<T,3>> controllPoints_;
+
 };
 
 

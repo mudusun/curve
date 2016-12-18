@@ -17,8 +17,8 @@ MyERBS<T>::MyERBS(MyCircle<T>* curve, int numLC)
     myknotvector_ = knotClass->getKnotVector();
    // std::cout << myknotvector_ << std::endl;
 
-   // createSubCurve();  //using subcurve to blend
-    createBezierCurve();   //using bezier curve to blend
+    createSubCurve();  //using subcurve to blend
+    //createBezierCurve();   //using bezier curve to blend
 
 
 }
@@ -89,7 +89,7 @@ void MyERBS<T>::createBezierCurve()
             currentBezierCurve_.push_back(curve);
             curve->toggleDefaultVisualizer();
             curve->setColor(bezierCurveColors[i]);
-           // curve->setVisible(false); //false = will not show beziercurve
+            curve->setVisible(false); //false = will not show beziercurve
             curve->replot(200,2);
             curve->translate(GMlib::Vector<float,3>(0.f,0.f,0.f));
             this->insert(curve.get());
@@ -106,17 +106,6 @@ void MyERBS<T>::createBezierCurve()
 template <typename T>
 void MyERBS<T>::bezierCurveInEval(T t, int d)
 {
-
-
-//    int k = 0;
-//    for(k = 1; k < myknotvector_.getDim()-3; ++k)
-//    {
-//        if(t < myknotvector_[k+1])
-//        {
-//            break;
-//        }
-//    }
-
 // Find the knot vector interval (k)
     int k = 0;
     for(k = 1; k <= myknotvector_.getDim()-1; ++k) // k is the knot vector
@@ -142,14 +131,14 @@ void MyERBS<T>::bezierCurveInEval(T t, int d)
     T scale = T(1) / (myknotvector_[k+1]- (myknotvector_[k]));
     T scaleBasisFunctions = (t - myknotvector_[k]) / (myknotvector_[k+1]-myknotvector_[k]);
 
-    GMlib::DVector<float> Bfunction = B(scaleBasisFunctions,d,scale);
+    GMlib::DVector<float> Bfunction = B(scaleBasisFunctions,d,scale); //scaleBasisFunctions 是w，见ppt 5
 
     auto Ck = currentBezierCurve_[k-1]->evaluateParent(tk,d); // Location 0-1
     auto Ck1 = currentBezierCurve_[k]->evaluateParent(tk1,d); // Location 0
 
 
     // C(t)
-    this->_p[0] = Ck[0] + (Ck1[0] - Ck[0]) * Bfunction[0];
+    this->_p[0] = Ck[0] + (Ck1[0] - Ck[0]) * Bfunction[0];  //The formulas for a two functions blending is:f (t) = g1(t) + B(t) (g2(t) − g1(t))
 
     // First derivate (C'(t))
     if(d > 0)
@@ -179,7 +168,7 @@ GMlib::DVector<float> MyERBS<T>::B(T tP, int d, T scale)
     if(d>0)
             v[1]=(6*tP - (6*std::pow(tP,2))) * scale;
     if(d>1)
-        (6-12*tP)*std::pow(scale,2);
+            v[2]= (6-12*tP)*std::pow(scale,2);
 
     return v;
 }
@@ -216,7 +205,7 @@ void MyERBS<T>::subCurveInEval(T t, int d)
     auto Ck1 = currentSubCurve_[k]->evaluateParent(t,d); // Location 0
 
     T scale = 1 / (myknotvector_[k+1]- myknotvector_[k]);
-    T scaleBasisFunctions = (t - myknotvector_[k]) / (myknotvector_[k+1]-myknotvector_[k]);
+    T scaleBasisFunctions = (t - myknotvector_[k]) / (myknotvector_[k+1]-myknotvector_[k]); // Mapping from the global domain [t1,tn] to the local domain [0,1]
 
 
 
@@ -250,8 +239,8 @@ void MyERBS<T>::eval(T t, int d, bool /*l*/)
 
     this->_p.setDim( d + 1 );
 
-    bezierCurveInEval(t,d);
- //   subCurveInEval(t,d);
+    //bezierCurveInEval(t,d);
+    subCurveInEval(t,d);
 
 }
 
@@ -297,7 +286,7 @@ T MyERBS<T>::getStartP()
 template <typename T>
 void MyERBS<T>::localSimulate(double dt)
 {
-   this->rotate(GMlib::Angle(1* dt * dt), GMlib::Vector<T,3>(1, 0, 1 ));
+  // this->rotate(GMlib::Angle(10* std::sin(0.1*dt) ), GMlib::Vector<T,3>(1, 0, 1 ));
 
 
 }

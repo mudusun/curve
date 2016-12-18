@@ -12,11 +12,11 @@ MyBezier<T>::MyBezier(GMlib::PCurve<T,3>* originalCurve, T startP, T centerP, T 
     // See mycircle where we set dim to +1 and now we need to take -1 to get the original d
     GMlib::DMatrix<T> evalMat;
 
-    MatrixEval(evalMat, deg,derivativesScaling_,scalingCenter_);
+    MatrixEval(evalMat, deg, derivativesScaling_, scalingCenter_);
 
     //std::cout <<"eval matrix"<< evalMat_ << std::endl;
 
-    controllPoints_ = evalMat.invert() * evaluateCurve; // equation 8.13  coefficients p. 226  evalMat是P88的 公式中间的大矩阵。 c0,c1,c2...是control point。
+    controllPoints_ = evalMat.invert() * evaluateCurve; // equation 8.13  coefficients p. 226  evalMat是P88的 公式中间的大矩阵。 evaluateCurve是c01，c12，c23   c0,c1,c2...是control point。
 
     for(int i = 0; i < evaluateCurve.getDim(); i++)
     {
@@ -29,11 +29,6 @@ MyBezier<T>::MyBezier(GMlib::PCurve<T,3>* originalCurve, T startP, T centerP, T 
 
 }
 
-//template <typename T>
-//MyBezier<T>::MyBezier(GMlib::DVector point_)
-//{
-//    controllPoints_ = point_;
-//}
 
 template <typename T>
 void MyBezier<T>::MatrixEval(GMlib::DMatrix<T> &evalMat_, int degree, T scaler, T tP)
@@ -111,12 +106,12 @@ void MyBezier<T>::MatrixEval(GMlib::DMatrix<T> &evalMat_, int degree, T scaler, 
 
 template <typename T>
 void MyBezier<T>::eval(T t, int d, bool /*l*/)
-
-{   //this->_p.setDim(deg+1);
+{
     GMlib::DMatrix<T> evalMat;
     MatrixEval(evalMat,controllPoints_.getDim()-1,derivativesScaling_,t);
     // this->_p     =  _c->evaluateParent(t , d);
-     this->_p = evalMat*controllPoints_;
+     this->_p = evalMat*controllPoints_;  // Position and belonging derivatives
+
   //  std::cout <<"p"<< evalMat*controllPoints_ << std::endl;
 
 }
@@ -143,7 +138,8 @@ template <typename T>
 void MyBezier<T>::localSimulate(double dt)
 {
 //    this->translate(GMlib::Vector<T,3>(0.2,0.0,0.0));
-    this->rotate(GMlib::Angle(10* dt), GMlib::Vector<float,3>( 0.0f, 0.0f, 1.0f ));
+   this->rotate(GMlib::Angle(1* dt), GMlib::Vector<float,3>( 0.0f, 0.0f, 1.0f ));
+
 
 }
 

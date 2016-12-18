@@ -27,8 +27,10 @@ namespace HXlib {
 
     this->_p.setDim( d + 1 );
 
-    const T ct = _r * 2*cos(3*t/2)*cos(t);  //formula for the curve
-    const T st = _r * 2*cos(3*t/2)*sin(t);
+//    const T ct = _r * 2*cos(3*t/2)*cos(t);  //formula for the curve
+//    const T st = _r * 2*cos(3*t/2)*sin(t);
+          const T ct =1.5*cos(t)-cos(5*t);  //formula for the fish curve
+          const T st = 1.5*sin(t)-sin(4*t);
 
     this->_p[0][0] = ct;
     this->_p[0][1] = st;
@@ -40,42 +42,55 @@ namespace HXlib {
       if( d > 0 )  // First derivative
       {
 
-        this->_p[1][0] = -(1/2)*_r*(sin(t/2)+5*sin(5*t/2));
-        this->_p[1][1] = -(1/2)*_r*(cos(t/2)-5*cos(5*t/2));
-        this->_p[1][2] =  T(0);
+//        this->_p[1][0] = -(1/2)*_r*(sin(t/2)+5*sin(5*t/2));
+//        this->_p[1][1] = -(1/2)*_r*(cos(t/2)-5*cos(5*t/2));
+//        this->_p[1][2] =  T(0);
+
+          this->_p[1][0] = 5*sin(5*t)-1.5*sin(t);
+          this->_p[1][1] = 1.5*cos(t)-4*cos(4*t);
+          this->_p[1][2] =  T(0);
       }
 
       if( d > 1 )
       {
 
-        this->_p[2][0] = -(1/4)*_r *(cos(t/2) + 25 *cos((5* t)/2));
-        this->_p[2][1] = 1/4* _r *(sin(t/2) - 25* sin((5* t)/2));
-        this->_p[2][2] =  T(0);
+//        this->_p[2][0] = -(1/4)*_r *(cos(t/2) + 25 *cos((5* t)/2));
+//        this->_p[2][1] = 1/4* _r *(sin(t/2) - 25* sin((5* t)/2));
+//        this->_p[2][2] =  T(0);
+
+          this->_p[2][0] = 25*cos(5*t)-1.5*cos(t);
+          this->_p[2][1] = 16*sin(4*t) - 1.5*sin(t);
+          this->_p[2][2] =  T(0);
+
       }
 
       if( d > 2 )
       {
 
-        this->_p[3][0] =  1/8 * _r* (sin(t/2) + 125 *sin((5* t)/2));
-        this->_p[3][1] =  1/8* _r* (cos(t/2) - 125 *cos((5* t)/2));
-        this->_p[3][2] =  T(0);
+//        this->_p[3][0] =  1/8 * _r* (sin(t/2) + 125 *sin((5* t)/2));
+//        this->_p[3][1] =  1/8* _r* (cos(t/2) - 125 *cos((5* t)/2));
+//        this->_p[3][2] =  T(0);
+          this->_p[2][0] = 1.5*sin(t)-125*sin(5*t);
+          this->_p[2][1] = 64*cos(4*t) - 1.5*cos(t);
+          this->_p[2][2] =  T(0);
+
       }
 
-      if( d > 3 )
-      {
+//      if( d > 3 )
+//      {
 
-        this->_p[4][0] =  1/16 * _r* (cos(t/2) + 625 *cos((5* t)/2));
-        this->_p[4][1] = -1/16 * _r* (sin(t/2) - 625 *sin((5* t)/2));
-        this->_p[4][2] =  T(0);
-      }
+//        this->_p[4][0] =  1/16 * _r* (cos(t/2) + 625 *cos((5* t)/2));
+//        this->_p[4][1] = -1/16 * _r* (sin(t/2) - 625 *sin((5* t)/2));
+//        this->_p[4][2] =  T(0);
+//      }
 
-      if( d > 4 )
-      {
+//      if( d > 4 )
+//      {
 
-        this->_p[5][0] = -1/32* _r* (sin(t/2) + 3125 *sin((5* t)/2));
-        this->_p[5][1] = -1/32* _r* (cos(t/2) - 3125 *cos((5* t)/2));
-        this->_p[5][2] =  T(0);
-      }
+//        this->_p[5][0] = -1/32* _r* (sin(t/2) + 3125 *sin((5* t)/2));
+//        this->_p[5][1] = -1/32* _r* (cos(t/2) - 3125 *cos((5* t)/2));
+//        this->_p[5][2] =  T(0);
+//      }
 
 
 
@@ -88,7 +103,7 @@ namespace HXlib {
   T MyCircle<T>::getEndP()
   {
 
-    return T( M_2PI );
+    return T( M_PI );
   }
 
 
@@ -97,7 +112,7 @@ namespace HXlib {
   T MyCircle<T>::getStartP()
   {
 
-    return T(-M_2PI);
+    return T(-M_PI);
   }
 
 

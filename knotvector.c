@@ -13,7 +13,7 @@ KnotVector<T>::KnotVector( MyCircle<T>* mycurve, float numLC) // numLC:number of
     startP_ = mycurve_->getParStart();
     endP_ = mycurve_->getParEnd();
 
-    step_ = (endP_ - startP_)/ (numLC-0); // Num of intervals. Ett mindre intervall enn knots (bestandig)
+    step_ = (endP_ - startP_)/ (numLC); // Num of intervals. One interval less than knots (constant)
     start_ = startP_ - step_;
     current_ = startP_ - step_;
     center_ = startP_;
@@ -21,7 +21,7 @@ KnotVector<T>::KnotVector( MyCircle<T>* mycurve, float numLC) // numLC:number of
 
 
 
-    // If he/she is OPEN then set the two last/first knots equal
+    // If it is OPEN then set the two last/first knots equal
     if(!mycurve_->isClosed())
     {
         for(int i = 0; i < 2; i++)
@@ -30,42 +30,33 @@ KnotVector<T>::KnotVector( MyCircle<T>* mycurve, float numLC) // numLC:number of
             knotVec_[numLC+1] = endP_;
         }
     }
+
     int k = 0;
     if(mycurve_->isClosed())
         k = 2;
     else
         k = 1;
-
-    // Take in the tP's (Closed)
-    for(int i = 1; i < numLC+k; i++)
-    {
-        //(*this)[i] = step_*(i-1);
-        knotVec_[i] = start_ + step_*(i);
-    }
-    // check han/hun er closed
+    // check if it is closed
     if(mycurve_->isClosed())
     {
         knotVec_[0] = start_;
         knotVec_[numLC+2] = endParameter_;
     }
+
+    // Take in the tP's (Closed)
+    for(int i = 1; i < numLC+k; i++)
+    {
+        knotVec_[i] = start_ + step_*(i);
+    }
+
     // print out knotVector
     for(int i = 0; i < numLC +2; i++)
     {
-        //std::cout<<"THis "<<(*this)[i]<<std::endl;
+        //std::cout<<"knotVector "<<(*this)[i]<<std::endl;
     }
 }
 
-/*template <typename T>
-int KnotVector<T>::getSize()
-{
-    return knotVec_.getDim();
-}
 
-template <typename T>
-//T KnotVector<T>::getParameters(int i)*/
-//{
-// return knotVec_[i];
-//}
 
 template <typename T>
 GMlib::DVector<T> KnotVector<T>::getKnotVector()
